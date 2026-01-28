@@ -707,7 +707,15 @@ async function handleFormSubmit(e) {
                 const total = subtotal - totalDiskon;
 
                 products.push({
-                    Produk: produk, // Using TitleCase for Apps Script compatibility 
+                    // Lowercase (for standard JS/JSON patterns)
+                    produk: produk,
+                    qty: qty,
+                    harga: harga,
+                    diskon: diskon,
+                    total: total,
+
+                    // TitleCase (commonly used in Apps Script/Spreadsheet mapping)
+                    Produk: produk,
                     Qty: qty,
                     Harga: harga,
                     Diskon: diskon,
