@@ -702,16 +702,25 @@ async function handleFormSubmit(e) {
             const diskon = parseFloat(diskonInput.value) || 0;
 
             if (produk && qty > 0) {
+                const subtotal = qty * harga;
+                const totalDiskon = (subtotal * diskon) / 100;
+                const total = subtotal - totalDiskon;
+
                 products.push({
-                    produk,
-                    qty,
-                    harga,
-                    diskon
+                    Produk: produk, // Using TitleCase for Apps Script compatibility 
+                    Qty: qty,
+                    Harga: harga,
+                    Diskon: diskon,
+                    Total: total
                 });
             }
         });
 
-        // ... rest of submit logic ...
+        console.log('Sending Products Data:', products);
+
+        if (products.length === 0) {
+            throw new Error('Tidak ada produk valid untuk disimpan.');
+        }
 
         // Send to Google Apps Script
         const formData = new URLSearchParams();
@@ -724,6 +733,8 @@ async function handleFormSubmit(e) {
         formData.append('keteranganBayar', elements.keteranganBayar.value);
         formData.append('catatan', elements.catatan.value || '');
         formData.append('products', JSON.stringify(products));
+
+        console.log('Full Payload:', Object.fromEntries(formData.entries()));
 
         const response = await fetch(CONFIG.SCRIPT_URL, {
             method: 'POST',
