@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test - PO Sales</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        .debug-section {
+            background: #16213e;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #0f3460;
+        }
+
+        .success {
+            color: #4caf50;
+        }
+
+        .error {
+            color: #f44336;
+        }
+
+        .warning {
+            color: #ff9800;
+        }
+
+        pre {
+            background: #0f3460;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 PO Sales Debug Test</h1>
+
+    <div class="debug-section">
+        <h2>1. Configuration Check</h2>
+        <div id="configCheck">Checking...</div>
+    </div>
+
+    <div class="debug-section">
+        <h2>2. DOM Elements Check</h2>
+        <div id="domCheck">Checking...</div>
+    </div>
+
+    <div class="debug-section">
+        <h2>3. Google Sheets Connection Test</h2>
+        <div id="connectionCheck">Checking...</div>
+    </div>
+
+    <div class="debug-section">
+        <h2>4. Product Data Test</h2>
+        <div id="productDataCheck">Checking...</div>
+    </div>
+
+    <div class="debug-section">
+        <h2>5. Test Product Dropdown</h2>
+        <select id="testDropdown">
+            <option value="">-- Test Dropdown --</option>
+        </select>
+        <div id="dropdownResult"></div>
+    </div>
+
+    <!-- Include config -->
+    <script src="config.js"></script>
+
+    <script>
+        // 1. Check Configuration
+        function checkConfig() {
+            const output = document.getElementById('configCheck');
+            if (typeof CONFIG !== 'undefined') {
+                output.innerHTML = `
+                    <p class="success">✓ CONFIG object found</p>
+                    <pre>${JSON.stringify(CONFIG, null, 2)}</pre>
+                `;
+            } else {
+                output.innerHTML = '<p class="error">✗ CONFIG object not found!</p>';
+            }
+        }
+
+        // 2. Check DOM Elements
+        function checkDOM() {
+            const output = document.getElementById('domCheck');
+            const testDropdown = document.getElementById('testDropdown');
+
+            if (testDropdown) {
+                output.innerHTML = '<p class="success">✓ Test dropdown element found</p>';
+            } else {
+                output.innerHTML = '<p class="error">✗ Test dropdown element not found!</p>';
+            }
+        }
+
+        // 3. Test Google Sheets Connection
+        async function testConnection() {
+            const output = document.getElementById('connectionCheck');
+            output.innerHTML = '<p class="warning">⏳ Testing connection...</p>';
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('action', 'getSales');
+
+                const response = await fetch(CONFIG.SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                output.innerHTML = `
+                    <p class="success">✓ Connection successful!</p>
+                    <p>Response status: ${response.status}</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            } catch (error) {
+                output.innerHTML = `
+                    <p class="error">✗ Connection failed!</p>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        // 4. Test Product Data Loading
+        async function testProductData() {
+            const output = document.getElementById('productDataCheck');
+            output.innerHTML = '<p class="warning">⏳ Loading product data...</p>';
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('action', 'getProduk');
+
+                const response = await fetch(CONFIG.SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                console.log('Product data result:', result);
+
+                if (result.success && result.data) {
+                    const headerRow = result.data[0];
+                    const dataRows = result.data.slice(1);
+
+                    output.innerHTML = `
+                        <p class="success">✓ Product data loaded successfully!</p>
+                        <p><strong>Total rows:</strong> ${result.data.length}</p>
+                        <p><strong>Header row:</strong></p>
+                        <pre>${JSON.stringify(headerRow, null, 2)}</pre>
+                        <p><strong>First 3 data rows:</strong></p>
+                        <pre>${JSON.stringify(dataRows.slice(0, 3), null, 2)}</pre>
+                        <p><strong>Column 0 (NAMA PRODUK) values:</strong></p>
+                        <pre>${dataRows.map(row => row[0]).slice(0, 10).join('\n')}</pre>
+                    `;
+
+                    // Try to populate test dropdown
+                    populateTestDropdown(dataRows);
+                } else {
+                    output.innerHTML = `
+                        <p class="error">✗ Failed to load product data!</p>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                output.innerHTML = `
+                    <p class="error">✗ Error loading product data!</p>
+                    <p>Error: ${error.message}</p>
+                    <pre>${error.stack}</pre>
+                `;
+            }
+        }
+
+        // 5. Populate Test Dropdown
+        function populateTestDropdown(dataRows) {
+            const dropdown = document.getElementById('testDropdown');
+            const output = document.getElementById('dropdownResult');
+
+            try {
+                dropdown.innerHTML = '<option value="">-- Select Product --</option>';
+
+                let addedCount = 0;
+                dataRows.forEach((row, index) => {
+                    console.log(`Processing row ${index}:`, row);
+
+                    if (row[0] && row[0].trim() !== '') {
+                        const option = document.createElement('option');
+                        option.value = row[0];
+                        option.textContent = row[0];
+                        dropdown.appendChild(option);
+                        addedCount++;
+                    }
+                });
+
+                output.innerHTML = `
+                    <p class="success">✓ Dropdown populated successfully!</p>
+                    <p><strong>Products added:</strong> ${addedCount}</p>
+                    <p><strong>Total options:</strong> ${dropdown.options.length}</p>
+                `;
+            } catch (error) {
+                output.innerHTML = `
+                    <p class="error">✗ Error populating dropdown!</p>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            checkConfig();
+            checkDOM();
+            await testConnection();
+            await testProductData();
+        }
+
+        // Run tests when page loads
+        window.addEventListener('DOMContentLoaded', runAllTests);
+    </script>
+</body>
+
+</html>
