@@ -691,36 +691,43 @@ async function handleFormSubmit(e) {
         const products = [];
         const allRows = elements.productRowsContainer.querySelectorAll('.product-row');
 
-        allRows.forEach(row => {
+        allRows.forEach((row, index) => {
             const searchInput = row.querySelector('.produk-search');
             const qtyInput = row.querySelector('.qty-input');
             const diskonInput = row.querySelector('.diskon-input');
 
             const produk = searchInput.value;
             const qty = parseInt(qtyInput.value) || 0;
-            const harga = parseFloat(searchInput.dataset.harga) || 0;
-            const diskon = parseFloat(diskonInput.value) || 0;
+
+            // Ensure we get a numeric value, default to 0 if NaN or missing
+            const rawHarga = searchInput.dataset.harga;
+            const harga = (rawHarga !== undefined && rawHarga !== null) ? parseFloat(rawHarga) : 0;
+
+            const rawDiskon = diskonInput.value;
+            const diskon = (rawDiskon !== undefined && rawDiskon !== '') ? parseFloat(rawDiskon) : 0;
 
             if (produk && qty > 0) {
                 const subtotal = qty * harga;
                 const totalDiskon = (subtotal * diskon) / 100;
                 const total = subtotal - totalDiskon;
 
-                products.push({
-                    // Lowercase (for standard JS/JSON patterns)
+                const productObj = {
                     produk: produk,
                     qty: qty,
-                    harga: harga,
-                    diskon: diskon,
-                    total: total,
+                    harga: isNaN(harga) ? 0 : harga,
+                    diskon: isNaN(diskon) ? 0 : diskon,
+                    total: isNaN(total) ? 0 : total,
 
-                    // TitleCase (commonly used in Apps Script/Spreadsheet mapping)
+                    // TitleCase for compatibility
                     Produk: produk,
                     Qty: qty,
-                    Harga: harga,
-                    Diskon: diskon,
-                    Total: total
-                });
+                    Harga: isNaN(harga) ? 0 : harga,
+                    Diskon: isNaN(diskon) ? 0 : diskon,
+                    Total: isNaN(total) ? 0 : total
+                };
+
+                products.push(productObj);
+                console.log(`Product Row ${index + 1} added:`, productObj);
             }
         });
 
