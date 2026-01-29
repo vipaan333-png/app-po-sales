@@ -118,13 +118,7 @@ async function loadAllData() {
 // Load Sales Data
 async function loadSalesData() {
     try {
-        const formData = new URLSearchParams();
-        formData.append('action', 'getSales');
-
-        const response = await fetch(CONFIG.SCRIPT_URL, {
-            method: 'POST',
-            body: formData
-        });
+        const response = await fetch(`${CONFIG.SCRIPT_URL}?action=getSales`);
         const result = await response.json();
 
         if (result.success && result.data) {
@@ -142,13 +136,7 @@ async function loadSalesData() {
 // Load Outlet Data
 async function loadOutletData() {
     try {
-        const formData = new URLSearchParams();
-        formData.append('action', 'getOutlet');
-
-        const response = await fetch(CONFIG.SCRIPT_URL, {
-            method: 'POST',
-            body: formData
-        });
+        const response = await fetch(`${CONFIG.SCRIPT_URL}?action=getOutlet`);
         const result = await response.json();
 
         if (result.success && result.data) {
@@ -174,13 +162,7 @@ let produkColIndex = {
 // Load Produk Data
 async function loadProdukData() {
     try {
-        const formData = new URLSearchParams();
-        formData.append('action', 'getProduk');
-
-        const response = await fetch(CONFIG.SCRIPT_URL, {
-            method: 'POST',
-            body: formData
-        });
+        const response = await fetch(`${CONFIG.SCRIPT_URL}?action=getProduk`);
         const result = await response.json();
 
         console.log('Product data response:', result); // Debug log

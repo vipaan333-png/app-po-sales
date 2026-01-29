@@ -108,14 +108,7 @@
             output.innerHTML = '<p class="warning">⏳ Testing connection...</p>';
 
             try {
-                const formData = new URLSearchParams();
-                formData.append('action', 'getSales');
-
-                const response = await fetch(CONFIG.SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-
+                const response = await fetch(`${CONFIG.SCRIPT_URL}?action=getSales`);
                 const result = await response.json();
 
                 output.innerHTML = `
@@ -137,14 +130,7 @@
             output.innerHTML = '<p class="warning">⏳ Loading product data...</p>';
 
             try {
-                const formData = new URLSearchParams();
-                formData.append('action', 'getProduk');
-
-                const response = await fetch(CONFIG.SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-
+                const response = await fetch(`${CONFIG.SCRIPT_URL}?action=getProduk`);
                 const result = await response.json();
 
                 console.log('Product data result:', result);
