@@ -92,6 +92,7 @@ body::before {
 /* Container */
 .container {
     max-width: 1200px;
+    min-width: 1200px;
     margin: 0 auto;
     padding: var(--spacing-lg);
 }
@@ -468,7 +469,8 @@ input:read-only {
     }
 }
 
-/* Responsive Design */
+/* Responsive Design disabled to force desktop mode */
+/* 
 @media (max-width: 768px) {
     .header h1 {
         font-size: 2rem;
@@ -490,6 +492,7 @@ input:read-only {
         grid-template-columns: 1fr;
     }
 }
+*/
 
 /* Utility Classes */
 .hidden {
@@ -760,7 +763,8 @@ input:read-only {
     transform: scale(0.95);
 }
 
-/* Responsive Product Grid */
+/* Responsive Product Grid disabled */
+/*
 @media (max-width: 768px) {
     .product-row-grid {
         grid-template-columns: 1fr;
@@ -772,3 +776,4 @@ input:read-only {
         min-width: unset;
     }
 }
+*/
