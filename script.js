@@ -23,7 +23,8 @@ const elements = {
     priceInfo: null,
     submitBtn: null,
     resetBtn: null,
-    messageContainer: null
+    messageContainer: null,
+    outletSuggestions: null
 };
 
 // Initialize App
@@ -79,6 +80,7 @@ function initializeElements() {
     elements.submitBtn = document.getElementById('submitBtn');
     elements.resetBtn = document.getElementById('resetBtn');
     elements.messageContainer = document.getElementById('messageContainer');
+    elements.outletSuggestions = document.getElementById('outletSuggestions');
 
     // Validate critical elements
     const criticalElements = [
@@ -153,7 +155,7 @@ async function loadOutletData() {
 
         if (result.success && result.data) {
             outletData = result.data.slice(1); // Skip header row
-            populateOutletDropdown();
+            // Note: populateOutletDropdown removed (using search now)
         } else {
             throw new Error('Failed to load outlet data');
         }
@@ -248,19 +250,68 @@ function populateSalesDropdown() {
     });
 }
 
-// Populate Outlet Dropdown
-function populateOutletDropdown() {
-    if (!elements.namaOutlet) return;
-    elements.namaOutlet.innerHTML = '<option value="">-- Pilih Outlet --</option>';
+// Setup Outlet Search Listener
+function setupOutletSearchListener() {
+    if (!elements.namaOutlet || !elements.outletSuggestions) return;
 
-    outletData.forEach(row => {
-        if (row[0]) { // NAMA OUTLET is in column 0
-            const option = document.createElement('option');
-            option.value = row[0];
-            option.textContent = row[0];
-            elements.namaOutlet.appendChild(option);
+    elements.namaOutlet.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+
+        if (query.length < 1) {
+            elements.outletSuggestions.innerHTML = '';
+            elements.outletSuggestions.classList.add('hidden');
+            return;
+        }
+
+        const matches = outletData.filter(row => {
+            const name = String(row[0]).toLowerCase();
+            return name.includes(query);
+        }).slice(0, 50);
+
+        if (matches.length > 0) {
+            elements.outletSuggestions.innerHTML = '';
+            matches.forEach(outlet => {
+                const name = outlet[0];
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.textContent = name;
+
+                div.addEventListener('click', () => {
+                    elements.namaOutlet.value = name;
+                    elements.outletSuggestions.classList.add('hidden');
+                    handleSearchSelectionOutlet(outlet);
+                });
+
+                elements.outletSuggestions.appendChild(div);
+            });
+            elements.outletSuggestions.classList.remove('hidden');
+        } else {
+            elements.outletSuggestions.innerHTML = '<div class="suggestion-item">Outlet tidak ditemukan</div>';
+            elements.outletSuggestions.classList.remove('hidden');
         }
     });
+
+    // Close suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!elements.namaOutlet.contains(e.target) && !elements.outletSuggestions.contains(e.target)) {
+            elements.outletSuggestions.classList.add('hidden');
+        }
+    });
+
+    // Handle Focus
+    elements.namaOutlet.addEventListener('focus', () => {
+        if (elements.namaOutlet.value.length > 0) {
+            elements.outletSuggestions.classList.remove('hidden');
+        }
+    });
+}
+
+// Handle Search Selection for Outlet
+function handleSearchSelectionOutlet(outlet) {
+    if (outlet) {
+        elements.alamat.value = outlet[1] || ''; // ALAMAT is in column 1
+        elements.noTelepon.value = outlet[2] || ''; // NO TELPON is in column 2
+    }
 }
 
 // Setup Search Listeners
@@ -407,9 +458,8 @@ function handleSearchSelection(produk, row) {
 
 // Setup Event Listeners
 function setupEventListeners() {
-    if (elements.namaOutlet) {
-        elements.namaOutlet.addEventListener('change', handleOutletChange);
-    }
+    setupOutletSearchListener();
+
     if (elements.addProductBtn) {
         elements.addProductBtn.addEventListener('click', addProductRow);
     }
@@ -878,6 +928,13 @@ function handleFormReset() {
     if (totalValue) totalValue.value = 0;
 
     elements.priceInfo.innerHTML = '';
+
+    // Clear and hide outlet suggestions
+    if (elements.outletSuggestions) {
+        elements.outletSuggestions.innerHTML = '';
+        elements.outletSuggestions.classList.add('hidden');
+    }
+
     updateRemoveButtons();
     generatePONumber();
     hideMessage();

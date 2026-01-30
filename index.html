@@ -44,9 +44,11 @@
                         <label for="namaOutlet">
                             Nama Outlet <span class="required">*</span>
                         </label>
-                        <select id="namaOutlet" required>
-                            <option value="">-- Pilih Outlet --</option>
-                        </select>
+                        <div class="search-container">
+                            <input type="text" id="namaOutlet" placeholder="Ketik nama outlet..." autocomplete="off"
+                                required>
+                            <div id="outletSuggestions" class="suggestions-list hidden"></div>
+                        </div>
                     </div>
 
                     <div class="form-group">
